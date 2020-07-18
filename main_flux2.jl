@@ -1,4 +1,3 @@
-"Problem: running on CUDNN 7.0"
 using Flux
 using Flux: throttle, logitbinarycrossentropy
 using Base.Iterators: partition

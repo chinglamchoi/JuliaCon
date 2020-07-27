@@ -50,16 +50,21 @@ function my_custom_train!(ps, data, opt)
     return training_loss
 end
 
+loss(x,y) = mean(logitbinarycrossentropy.(UNet_model(x) |> gpu, y |> gpu))
+
+last_improve = 0
 for i in 1:epoch_num
     epoch_loss, cnt = 0.0, 0
+    if last_improve >= 20
+	global optimiser.eta /= 10
+	global last_improve = 0
+    end
     for o in 1:length(mb_idxs)
         train_batch = gpu.(load_me(img_train_path, mask_train_path, mb_idxs[o]))
-        epoch_loss += my_custom_train!(UNet_model, train_batch, optimiser)
-        #Flux.train!(loss, params(UNet_model), train_batch, optimiser)
+        Flux.train!(loss, params(UNet_model), train_batch, optimiser)
 	cnt += 1
     end
     epoch_loss /= cnt
-    println("Epoch ", i, ": ", epoch_loss, "\n")
     testset = gpu.(load_me(img_test_path, mask_test_path, collect(1:test_size)))
     acc = accuracy((testset...)...)
     if acc > best_acc
@@ -67,6 +72,8 @@ for i in 1:epoch_num
         BSON.@save "best_model.BSON" model
         global best_acc = acc
         println("New best accuracy!")
+    else
+	global last_improve += 1
     end
     println("Epoch ", i, ": ", acc, "\n")
 end

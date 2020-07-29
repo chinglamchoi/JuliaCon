@@ -8,7 +8,7 @@ block1(in_channels, features) = Chain(Conv((3,3), in_channels=>features, pad=1),
     BatchNorm(features, relu)) |> gpu
 
 block2(in_channels, features) = Chain(MaxPool((2,2), stride=2),
-	Conv((3,3), in_channels=>features, pad=1),
+    Conv((3,3), in_channels=>features, pad=1),
     BatchNorm(features, relu), #calls n-1'th dim
     Conv((3,3), features=>features, pad=1),
     BatchNorm(features, relu)) |> gpu

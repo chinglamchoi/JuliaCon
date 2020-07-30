@@ -36,7 +36,7 @@ function accuracy(x,y)
     return 2 * sum(y_hat .* y) / (sum(y_hat) + sum(y))
 end
 
-optimiser = ADAM(0.01, (0.9, 0.999))
+optimiser = ADAM(0.01, (0.9, 0.999)) #
 best_acc, last_improve, epoch_num, threshold = 0.0, 0, 300, 0.95
 
 

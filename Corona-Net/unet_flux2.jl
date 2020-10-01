@@ -13,11 +13,11 @@ block2(in_channels, features) = Chain(MaxPool((2,2), stride=2),
     Conv((3,3), features=>features, pad=1),
     BatchNorm(features, relu)) |> gpu
 
-
 upconv(in_channels, features) = ConvTranspose((2,2), in_channels=>features, stride=2) |> gpu
 
 conv(in_channels, out_channels) = Conv((1,1), in_channels=>out_channels) |> gpu
 
+# define struct
 struct UNet
     conv_block
     conv_block2
@@ -39,13 +39,15 @@ end
 
 
 function (u::UNet)(x)
+    # contraction path
     enc1 = u.conv_block[1](x) |> gpu
     enc2 = u.conv_block[2](enc1) |> gpu
     enc3 = u.conv_block[3](enc2) |> gpu
     enc4 = u.conv_block[4](enc3) |> gpu
     
     bn = u.bottle(enc4) |> gpu
-	
+    
+    # expansion path
     dec4 = u.upconv_block[1](bn) |> gpu
     dec4 = cat(dims=3, dec4, enc4) |> gpu
     dec4 = u.conv_block2[1](dec4) |> gpu
@@ -61,6 +63,8 @@ function (u::UNet)(x)
     dec1 = u.conv_(dec1) |> gpu
 end
 
+
+## Testing code:
 
 #model = UNet() |> gpu
 #println(params(model))
